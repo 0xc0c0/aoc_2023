@@ -1,33 +1,74 @@
-import logging
+"""Python solver file for Advent of Code Day X"""
 import os
-import numpy as np
+import logging
 
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
 logger = logging.getLogger(__name__)
 
-def get_file_data(fn='input.txt'):
-    with open(fn) as f:
+
+def get_file_data(fn="input.txt"):
+    """Function returning data blob from input.txt file"""
+    with open(fn, "r", encoding="utf-8") as f:
         data = f.read()
     return data
 
+
+def parse_line(text_line):
+    """Parses single line of text from the input file
+
+    Args:
+        text_line (str): raw text line from input file
+    """
+    return list(text_line)
+
+
 def parse_data(text_data):
-    data = [[int(x) for x in list(line)] for line in text_data.strip('\n').strip().split('\n')]
-    return np.array(data)
+    """_summary_
 
-def function(param):
+    Args:
+        text_data (str): raw text blob from input file
+
+    Returns:
+        _type_: parsed input data ready for processing
+    """
+    data = [parse_line(line.strip()) for line in text_data.strip().split("\n")]
+    return data
+
+
+def function(data):
+    """Complete Part 1 work
+
+    Args:
+        data (list): list of parsed input objects/dictionaries
+
+    Returns:
+        int: answer to Part 1 question
+    """
     return 0
 
-def function2(param):
+
+def function2(data):
+    """Complete Part 2 work
+
+    Args:
+        data (list): list of parsed input objects/dictionaries
+
+    Returns:
+        int: answer to Part 2 question
+    """
     return 0
+
 
 def main():
+    """Main function used to solve AoC problem"""
     logger.setLevel(level=logging.INFO)
-    data = get_file_data()
-    model = parse_data(data)
-    answer = 0
+    text_data = get_file_data()
+    data = parse_data(text_data)
+    answer = function(data)
     print(f"Puzzle1: <SUMMARY>: {answer}")
-    answer = 0
-    print(f"Puzzle2: <SUMMARY>: {answer}")
-    
-if __name__ == '__main__':
+    answer2 = function2(data)
+    print(f"Puzzle2: <SUMMARY>: {answer2}")
+
+
+if __name__ == "__main__":
     main()
