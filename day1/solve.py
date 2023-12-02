@@ -60,9 +60,9 @@ def main():
     data = get_file_data()
     calibration_lines = parse_data(data)
     answer = get_cal_sum(calibration_lines)
-    print(f"Puzzle1: Calibration (Part 1): {answer}")
+    print(f"Day 1: Calibration Sums (Part 1): {answer}")
     answer = get_cal_sum_part2(calibration_lines)
-    print(f"Puzzle2: Calibration (Part 2): {answer}")
+    print(f"Day 1: Calibration Sums (Part 2): {answer}")
     
 if __name__ == '__main__':
     main()
