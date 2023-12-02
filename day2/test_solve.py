@@ -31,7 +31,7 @@ def get_test_data_2():
     return text
 
 
-def test_parse_input(test_data, test_data2):
+def test_parse_input(test_data):
     """Test all parsing functions associated with Part 1
 
     Args:
@@ -41,11 +41,8 @@ def test_parse_input(test_data, test_data2):
     assert isinstance(data, dict)
     assert data[1][0]["blue"] == 3
 
-    # data = parse_data(test_data2)
-    # assert (len(data[0])) == 0
 
-
-def test_all(test_data, test_data2):
+def test_all(test_data):
     """Test all functions associated with Parts 1 and 2
 
     Args:
@@ -54,6 +51,3 @@ def test_all(test_data, test_data2):
     data = parse_data(test_data)
     assert get_possible_games_sum(data) == 8
     assert get_min_power_sum(data) == 2286
-
-    # data = parse_data(test_data2)
-    # assert function2(data) == 0
