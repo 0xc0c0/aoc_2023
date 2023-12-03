@@ -59,7 +59,7 @@ def parse_line(text_line):
 
 
 def parse_data(text_data):
-    """_summary_
+    """Parses full data input
 
     Args:
         text_data (str): raw text blob from input file
@@ -98,6 +98,14 @@ def get_possible_games_sum(data):
 
 
 def get_power(game_rounds):
+    """get power for Part 2
+
+    Args:
+        game_rounds (list): list of dicts representing parsed game rounds
+
+    Returns:
+        int: product of maximums found in each color across all game rounds
+    """
     maxes = {"red": 0, "green": 0, "blue": 0}
 
     for game_round in game_rounds:

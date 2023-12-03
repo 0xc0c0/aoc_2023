@@ -1,7 +1,7 @@
 """Python test file for unit testing in support of AoC solves"""
 import os
 import pytest
-from .solve import parse_data, function, function2
+from .solve import parse_data, get_part_number_sum, get_gear_ratio_sum
 
 
 @pytest.fixture(name="test_data")
@@ -31,27 +31,31 @@ def get_test_data_2():
     return text
 
 
-def test_parse_input(test_data, test_data2):
+def test_parse_input(test_data):
     """Test all parsing functions associated with Part 1
 
     Args:
         test_data (str): takes in a raw text str object as a data blob
     """
-    data = parse_data(test_data)
-    assert (len(data[0])) == 0
+    numbers, symbols = parse_data(test_data)
+    assert len(symbols) == 6
+    assert len(numbers) == 10
+    assert numbers[0]["num"] == 467
+    assert numbers[0]["i"] == 0
+    assert numbers[0]["j"] == 0
+    assert numbers[9]["num"] == 598
+    assert numbers[9]["i"] == 9
+    assert numbers[9]["j"] == 5
 
-    data = parse_data(test_data2)
-    assert (len(data[0])) == 0
 
-
-def test_all(test_data, test_data2):
+def test_all(test_data):
     """Test all functions associated with Parts 1 and 2
 
     Args:
         test_data (str): takes in a raw text str object as a data blob
     """
-    data = parse_data(test_data)
-    assert function(data) == 0
-
-    data = parse_data(test_data2)
-    assert function2(data) == 0
+    numbers, symbols = parse_data(test_data)
+    part1 = get_part_number_sum(numbers, symbols)
+    assert part1 == 4361
+    part2 = get_gear_ratio_sum(numbers, symbols)
+    assert part2 == 467835

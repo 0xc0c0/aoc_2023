@@ -25,7 +25,7 @@ def parse_line(text_line):
 
 
 def parse_data(text_data):
-    """_summary_
+    """Parses full data input
 
     Args:
         text_data (str): raw text blob from input file
