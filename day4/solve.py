@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""Python solver file for Advent of Code Day X"""
+"""Python solver file for Advent of Code Day 4"""
 import os
 import logging
 
@@ -67,9 +67,9 @@ def main():
     text_data = get_file_data()
     data = parse_data(text_data)
     answer = function(data)
-    print(f"Day X: Part 1: <SUMMARY>: {answer}")
+    print(f"Day 4: Part 1: <SUMMARY>: {answer}")
     answer2 = function2(data)
-    print(f"Day X: Part 2: <SUMMARY>: {answer2}")
+    print(f"Day 4: Part 2: <SUMMARY>: {answer2}")
 
 
 if __name__ == "__main__":
