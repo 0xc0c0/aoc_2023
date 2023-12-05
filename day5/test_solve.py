@@ -1,7 +1,7 @@
 """Python test file for unit testing in support of AoC solves"""
 import os
 import pytest
-from .solve import parse_data, function, function2
+from .solve import parse_data, find_lowest_location, function2
 
 
 @pytest.fixture(name="test_data")
@@ -37,8 +37,11 @@ def test_parse_input(test_data):
     Args:
         test_data (str): takes in a raw text str object as a data blob
     """
-    data = parse_data(test_data)
-    assert (len(data)) == 0
+    seeds, mappings = parse_data(test_data)
+    assert len(seeds) == 4
+    assert len(mappings) == 7
+    assert len(mappings[0]) == 2
+    assert mappings[2][3][1] == 7
 
 
 def test_all(test_data):
@@ -47,5 +50,6 @@ def test_all(test_data):
     Args:
         test_data (str): takes in a raw text str object as a data blob
     """
-    data = parse_data(test_data)
-    assert function(data) == 0
+    seeds, mappings = parse_data(test_data)
+    assert find_lowest_location(seeds, mappings) == 35
+    assert function2(seeds, mappings) == 46
