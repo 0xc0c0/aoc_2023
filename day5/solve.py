@@ -110,11 +110,12 @@ def find_lowest_location(seeds, mappings):
     return lowest_location
 
 
-def function2(seeds, mappings):
+def find_lowest_location_with_ranges(seeds, mappings):
     """Complete Part 2 work
 
     Args:
-        data (list): list of parsed input objects/dictionaries
+        seeds (list): list of seed ranges to analyze
+        mappings (list): list of transformation mappings to get to locations
 
     Returns:
         int: answer to Part 2 question
@@ -213,7 +214,7 @@ def main():
     data = parse_data(text_data)
     answer = find_lowest_location(*data)
     print(f"Day 5: Part 1: Find Lowest Value Location with Seed Inputs: {answer}")
-    answer2 = function2(*data)
+    answer2 = find_lowest_location_with_ranges(*data)
     print(
         f"Day 5: Part 2: Find Lowest Value Location with Seed Range Inputs: {answer2}"
     )

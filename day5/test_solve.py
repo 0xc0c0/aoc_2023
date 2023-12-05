@@ -1,7 +1,7 @@
 """Python test file for unit testing in support of AoC solves"""
 import os
 import pytest
-from .solve import parse_data, find_lowest_location, function2
+from .solve import parse_data, find_lowest_location, find_lowest_location_with_ranges
 
 
 @pytest.fixture(name="test_data")
@@ -52,4 +52,4 @@ def test_all(test_data):
     """
     seeds, mappings = parse_data(test_data)
     assert find_lowest_location(seeds, mappings) == 35
-    assert function2(seeds, mappings) == 46
+    assert find_lowest_location_with_ranges(seeds, mappings) == 46
