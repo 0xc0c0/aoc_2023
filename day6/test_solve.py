@@ -1,7 +1,7 @@
 """Python test file for unit testing in support of AoC solves"""
 import os
 import pytest
-from .solve import parse_data, function, function2
+from .solve import parse_data, parse_data2, find_wins, get_race_winners
 
 
 @pytest.fixture(name="test_data")
@@ -38,7 +38,9 @@ def test_parse_input(test_data):
         test_data (str): takes in a raw text str object as a data blob
     """
     data = parse_data(test_data)
-    assert (len(data)) == 0
+    times, distances = data
+    assert times[0] == 7
+    assert len(times) == len(distances)
 
 
 def test_all(test_data):
@@ -48,4 +50,7 @@ def test_all(test_data):
         test_data (str): takes in a raw text str object as a data blob
     """
     data = parse_data(test_data)
-    assert function(data) == 0
+    assert find_wins(*data) == 288
+
+    data = parse_data2(test_data)
+    assert get_race_winners(*data) == 71503
