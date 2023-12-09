@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
-"""Python solver file for Advent of Code Day X"""
+"""Python solver file for Advent of Code Day 8"""
 import os
+import math
 import logging
 
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
@@ -24,6 +25,36 @@ def parse_line(text_line):
     return list(text_line)
 
 
+def parse_direction(text_direction):
+    """Parse text char containing L or R
+
+    Args:
+        text_direction (str): L or R to parse
+
+    Returns:
+        int: return 0 or 1 for L or R, respectively
+    """
+    if text_direction == "L":
+        return 0
+    elif text_direction == "R":
+        return 1
+
+
+def parse_element(text_element):
+    """Parse text element in the form 'AAA = (BBB, CCC)'
+
+    Args:
+        text_element (str): text input
+
+    Returns:
+        tuple: (node like 'AAA', mapping like ('BBB', 'CCC'))
+    """
+    text_node, text_mapping = text_element.strip().split(" = ")
+    left, right = text_mapping.lstrip("(").rstrip(")").split(", ")
+    node = text_node.strip()
+    return (node, (left, right))
+
+
 def parse_data(text_data):
     """Parses full data input
 
@@ -33,11 +64,15 @@ def parse_data(text_data):
     Returns:
         _type_: parsed input data ready for processing
     """
-    data = [parse_line(line.strip()) for line in text_data.strip().split("\n")]
-    return data
+    instructions, network_nodes = text_data.strip().strip("\n").split("\n\n")
+    instructions = [parse_direction(d) for d in list(instructions.strip())]
+    network_nodes = dict(
+        [parse_element(text_node) for text_node in network_nodes.strip().split("\n")]
+    )
+    return instructions, network_nodes
 
 
-def function(data):
+def get_min_required_steps(data, start="AAA", end="ZZZ"):
     """Complete Part 1 work
 
     Args:
@@ -46,10 +81,37 @@ def function(data):
     Returns:
         int: answer to Part 1 question
     """
-    return 0
+    instructions, network = data
+    loc = start
+    count = 0
+    passed_start_locs = set()
+    while loc != end:
+        if loc in passed_start_locs:
+            return -1
+        passed_start_locs.add(loc)
+
+        for instr in instructions:
+            count += 1
+            loc = network[loc][instr]
+    return count
 
 
-def function2(data):
+def check_all_locs(locs):
+    """Check if all locations meet the end condition
+
+    Args:
+        locs (list): list of locations (e.g. 'AAA')
+
+    Returns:
+        bool: True if end conditions met
+    """
+    for loc in locs:
+        if not loc.endswith("Z"):
+            return False
+    return True
+
+
+def get_min_required_ghost_steps(data):
     """Complete Part 2 work
 
     Args:
@@ -58,7 +120,39 @@ def function2(data):
     Returns:
         int: answer to Part 2 question
     """
-    return 0
+    _, network = data
+    starts = [k for k in network.keys() if k.endswith("A")]
+    targets = [k for k in network.keys() if k.endswith("Z")]
+    steps_tracker = dict()
+    for start in starts:
+        steps_tracker[start] = set()
+        for target in targets:
+            logger.debug("next item: %s -> %s", start, target)
+            min_steps = get_min_required_steps(data, start, target)
+            if min_steps > 0:
+                steps_tracker[start].add(min_steps)
+
+    logger.info(steps_tracker)
+    # found that there's one path for each start location and one step count
+
+    counts = [e.pop() for _, e in steps_tracker.items()]
+
+    return math.lcm(*counts)
+
+    # brute force method, doesn't work
+    # count = 0
+    # index = 0
+    # while check_all_locs(locs) is False:
+    #     logger.info("count is %i, nodes are %s", count, " ".join(locs))
+
+    #     while index != len(locs):
+    #         count += 1
+    #         instr = instructions[index]
+    #         for i, loc in enumerate(locs):
+    #             locs[i] = network[loc][instr]
+    #         index += 1
+    #     index = 0
+    # return count
 
 
 def main():
@@ -66,10 +160,10 @@ def main():
     logger.setLevel(level=logging.INFO)
     text_data = get_file_data()
     data = parse_data(text_data)
-    answer = function(data)
-    print(f"Day X: Part 1: <SUMMARY>: {answer}")
-    answer2 = function2(data)
-    print(f"Day X: Part 2: <SUMMARY>: {answer2}")
+    answer = get_min_required_steps(data)
+    print(f"Day 8: Part 1: Get Min Required Steps from AAA to ZZZ: {answer}")
+    answer2 = get_min_required_ghost_steps(data)
+    print(f"Day 8: Part 2: Get Min Required Steps for all Ghost Paths: {answer2}")
 
 
 if __name__ == "__main__":
