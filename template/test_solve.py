@@ -49,3 +49,4 @@ def test_all(test_data):
     """
     data = parse_data(test_data)
     assert function(data) == 0
+    assert function2(data) == 0
