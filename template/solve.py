@@ -33,7 +33,9 @@ def parse_data(text_data):
     Returns:
         _type_: parsed input data ready for processing
     """
-    data = [parse_line(line.strip()) for line in text_data.strip().split("\n")]
+    data = [
+        parse_line(line.strip()) for line in text_data.strip().strip("\n").split("\n")
+    ]
     return data
 
 
