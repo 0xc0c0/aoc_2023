@@ -1,7 +1,11 @@
 """Python test file for unit testing in support of AoC solves"""
 import os
 import pytest
-from .solve import parse_data, function, function2
+from .solve import (
+    parse_data,
+    get_sum_galaxy_distances,
+    get_sum_galaxy_distances_multiple,
+)
 
 
 @pytest.fixture(name="test_data")
@@ -38,7 +42,7 @@ def test_parse_input(test_data):
         test_data (str): takes in a raw text str object as a data blob
     """
     data = parse_data(test_data)
-    assert (len(data)) == 0
+    assert (len(data)) == 10
 
 
 def test_all(test_data):
@@ -48,5 +52,6 @@ def test_all(test_data):
         test_data (str): takes in a raw text str object as a data blob
     """
     data = parse_data(test_data)
-    assert function(data) == 0
-    assert function2(data) == 0
+    assert get_sum_galaxy_distances(data) == 374
+    assert get_sum_galaxy_distances_multiple(data, expansion_mult=10) == 1030
+    assert get_sum_galaxy_distances_multiple(data, expansion_mult=100) == 8410
