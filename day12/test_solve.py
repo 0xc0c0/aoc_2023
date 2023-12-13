@@ -1,7 +1,7 @@
 """Python test file for unit testing in support of AoC solves"""
 import os
 import pytest
-from .solve import parse_data, function, function2
+from .solve import parse_data, get_sum_arrangements, get_expanded_sum_arrangements
 
 
 @pytest.fixture(name="test_data")
@@ -38,7 +38,7 @@ def test_parse_input(test_data):
         test_data (str): takes in a raw text str object as a data blob
     """
     data = parse_data(test_data)
-    assert (len(data)) == 0
+    assert len(data) == 6
 
 
 def test_all(test_data):
@@ -48,5 +48,5 @@ def test_all(test_data):
         test_data (str): takes in a raw text str object as a data blob
     """
     data = parse_data(test_data)
-    assert function(data) == 0
-    assert function2(data) == 0
+    assert get_sum_arrangements(data) == 21
+    assert get_expanded_sum_arrangements(data) == 525152
