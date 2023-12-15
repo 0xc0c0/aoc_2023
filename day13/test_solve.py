@@ -1,7 +1,11 @@
 """Python test file for unit testing in support of AoC solves"""
 import os
 import pytest
-from .solve import parse_data, function, function2
+from .solve import (
+    parse_data,
+    summarize_reflection_lines,
+    summarize_smudged_reflection_lines,
+)
 
 
 @pytest.fixture(name="test_data")
@@ -37,8 +41,9 @@ def test_parse_input(test_data):
     Args:
         test_data (str): takes in a raw text str object as a data blob
     """
-    data = parse_data(test_data)
-    assert (len(data)) == 0
+    patterns = parse_data(test_data)
+    assert len(patterns) == 2
+    assert patterns[0].shape == (7, 9)
 
 
 def test_all(test_data):
@@ -48,5 +53,5 @@ def test_all(test_data):
         test_data (str): takes in a raw text str object as a data blob
     """
     data = parse_data(test_data)
-    assert function(data) == 0
-    assert function2(data) == 0
+    assert summarize_reflection_lines(data) == 405
+    assert summarize_smudged_reflection_lines(data) == 400
