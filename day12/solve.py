@@ -42,30 +42,60 @@ def parse_data(text_data):
     return data
 
 
-def get_count_arrangements(springs: list, groupings):
+def get_count_arrangements(arg_springs: list, arg_groupings: list):
     """Determine number of possible arrangements for a row
 
     Args:
         spring (list): list of springs in order
         grouping (list): list of groupings in order
     """
-    work_queue = [(springs, groupings)]
-    completed = 0
-    count = 0
+    arg_entry = (tuple(arg_springs), tuple(arg_groupings))
+    work_queue = [arg_entry]
+    results = {}
+    # completed = 0
     while len(work_queue) != 0:
-        completed += 1
-        if len(work_queue) % 10 == 0:
-            logger.debug("completed work is: %i", completed)
+        # completed += 1
+        # if len(work_queue) % 10 == 0:
+        #     logger.debug("completed work is: %i", completed)
         springs, groupings = work_queue.pop()
-        # logger.debug("attempting %s", (springs, groupings))
-        if groupings == []:
-            if springs.count("#") == 0:
-                # logger.debug("success: %s", springs)
-                count += 1  # all must be operational, can't have any damaged
+        r_entry = (tuple(springs), tuple(groupings))
+        if r_entry not in results:
+            results[r_entry] = {"status": "open"}
+
+        if results[r_entry]["status"] == "complete":
+            continue
+
+        if results[r_entry]["status"] == "pending":
+            check = True
+            result_count = 0
+            for entry in results[r_entry]["data"]:
+                if entry in results and results[entry]["status"] == "complete":
+                    result_count += results[entry]["data"]
+                else:
+                    check = False
+                    if r_entry not in work_queue:
+                        work_queue.append(r_entry)
+
+            if check is True:
+                results[r_entry]["status"] = "complete"
+                results[r_entry]["data"] = result_count
                 continue
+
+            # did not complete, add to end of queue once all pending runs are done
+            work_queue.insert(0, r_entry)
+            continue
+
+        logger.debug("attempting %s", (springs, groupings))
+        if groupings == tuple():
+            results[r_entry]["status"] = "complete"
+            if springs.count("#") == 0:
+                results[r_entry]["data"] = 1
+                continue
+            results[r_entry]["data"] = 0
             continue
         if sum(groupings) + len(groupings) - 1 > len(springs):
-            # logger.debug("fail: found too much required parts remaining")
+            results[r_entry]["status"] = "complete"
+            results[r_entry]["data"] = 0
             continue  # not possible
 
         g = groupings[0]
@@ -73,23 +103,45 @@ def get_count_arrangements(springs: list, groupings):
         if s == "#":
             spring_check = springs[:g]
             if spring_check.count(".") > 0:
-                # logger.debug("fail: beginning did not match")
-                continue  # not possible
+                results[r_entry]["status"] = "complete"
+                results[r_entry]["data"] = 0
+                continue
             if len(springs) > g and springs[g] == "#":
-                # logger.debug("fail: first grouping too large")
-                continue  # not possible
+                results[r_entry]["status"] = "complete"
+                results[r_entry]["data"] = 0
+                continue
             # If we're here, it means that the beginning is still valid for the first
             # 'g' number of spring values, including a trailing '.' or '?'
             # This means we assume all are '#' and a trailing '.' and move on
-            work_queue.append((springs[g + 1 :], groupings[1:]))
+            results[r_entry]["status"] = "pending"
+            if r_entry not in work_queue:
+                work_queue.append(r_entry)
+            opt = (tuple(springs[g + 1 :]), tuple(groupings[1:]))
+            results[r_entry]["data"] = [opt]
+            work_queue.insert(0, opt)
+            continue
 
-        elif s == "?":
-            work_queue.append((["."] + springs[1:], groupings))
-            work_queue.append((["#"] + springs[1:], groupings))
+        if s == "?":
+            if r_entry not in work_queue:
+                work_queue.append(r_entry)
+            opt1 = (tuple(["."] + list(springs[1:])), tuple(groupings))
+            opt2 = (tuple(["#"] + list(springs[1:])), tuple(groupings))
+            work_queue.append(opt1)
+            work_queue.append(opt2)
+            results[r_entry]["status"] = "pending"
+            results[r_entry]["data"] = [opt1, opt2]
+            continue
 
-        elif s == ".":
-            work_queue.append((springs[1:], groupings))
-    return count
+        if s == ".":
+            if r_entry not in work_queue:
+                work_queue.append(r_entry)
+            opt = (tuple(springs[1:]), tuple(groupings))
+            results[r_entry]["status"] = "pending"
+            results[r_entry]["data"] = [opt]
+            work_queue.append(opt)
+            continue
+    logger.debug(results[arg_entry])
+    return results[arg_entry]["data"]
 
 
 def get_sum_arrangements(data):
@@ -120,13 +172,13 @@ def get_expanded_sum_arrangements(data):
 
 def main():
     """Main function used to solve AoC problem"""
-    logger.setLevel(level=logging.DEBUG)
+    logger.setLevel(level=logging.INFO)
     text_data = get_file_data()
     data = parse_data(text_data)
     answer = get_sum_arrangements(data)
-    print(f"Day 12: Part 1: <SUMMARY>: {answer}")
+    print(f"Day 12: Part 1: Hot Springs Damaged Arrangements: {answer}")
     answer2 = get_expanded_sum_arrangements(data)
-    print(f"Day 12: Part 2: <SUMMARY>: {answer2}")
+    print(f"Day 12: Part 2: Hot Springs Damaged Arrangements: {answer2}")
 
 
 if __name__ == "__main__":
