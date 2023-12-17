@@ -3,6 +3,7 @@
 """Python solver file for Advent of Code Day 17"""
 import os
 import logging
+import numpy as np
 
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
 logger = logging.getLogger(__name__)
@@ -21,7 +22,7 @@ def parse_line(text_line):
     Args:
         text_line (str): raw text line from input file
     """
-    return list(text_line)
+    return [int(x) for x in list(text_line)]
 
 
 def parse_data(text_data):
@@ -36,31 +37,141 @@ def parse_data(text_data):
     data = [
         parse_line(line.strip()) for line in text_data.strip().strip("\n").split("\n")
     ]
-    return data
+    return np.array(data)
 
 
-def function(data):
-    """Complete Part 1 work
+def get_least_heat_lost_crucibles(blocks, starting_point=(0, 0), dest_point=(-1, -1)):
+    """Complete Part 1
 
     Args:
-        data (list): list of parsed input objects/dictionaries
+        data (np.array): grid representing heat loss amounts for passing through cells
+        starting_point (tuple, optional): starting point to work from. Defaults to (0, 0).
 
     Returns:
-        int: answer to Part 1 question
+        int: minimized heat loss value
     """
-    return 0
+    # ensure destination only consists of positive integers
+    dest_point = (dest_point[0] % blocks.shape[0], dest_point[1] % blocks.shape[1])
+
+    # queue entries: (point, direction, repeated_steps, heat_lost)
+    work_queue = [(starting_point, (0, 1), 0, 0)]
+    results = {}
+    check_loss_level = 0
+    while work_queue:
+        next_work_queue_indices = [
+            i for i, x in enumerate(work_queue) if x[3] == check_loss_level
+        ]
+        if not next_work_queue_indices:
+            logger.debug("completed loss level: %d...", check_loss_level)
+            check_loss_level += 1
+            continue
+        p, d, r_steps, loss = work_queue.pop(next_work_queue_indices[0])
+        entry = (p, d, r_steps)
+        if entry in results and results[entry] <= loss:
+            # skip doing anything.
+            continue
+        results[entry] = loss
+
+        # time to add the work for the next steps
+        if p == dest_point:
+            continue
+
+        possibles = [(0, -1), (0, 1), (-1, 0), (1, 0)]
+        for new_d in possibles:
+            if new_d == (-d[0], -d[1]):
+                continue
+            new_p = (p[0] + new_d[0], p[1] + new_d[1])
+            r, c = new_p
+            if r < 0 or r >= blocks.shape[0] or c < 0 or c >= blocks.shape[1]:
+                continue
+            new_loss = loss + blocks[new_p]
+            if new_d == d:
+                if r_steps < 3:
+                    new_entry = (new_p, new_d, r_steps + 1, new_loss)
+                    if new_entry not in work_queue:
+                        work_queue.append(new_entry)
+            else:
+                new_entry = (new_p, new_d, 1, new_loss)
+                if new_entry not in work_queue:
+                    work_queue.append(new_entry)
+
+    best_cases = np.zeros(blocks.shape, dtype=int)
+    for entry, loss in results.items():
+        p = entry[0]
+        if best_cases[p] == 0 or best_cases[p] > loss:
+            best_cases[p] = loss
+    logger.debug("\n %s", best_cases)
+    return best_cases[dest_point]
 
 
-def function2(data):
+def get_least_heat_loss_ultra_crucibles(
+    blocks, starting_point=(0, 0), dest_point=(-1, -1)
+):
     """Complete Part 2 work
 
     Args:
-        data (list): list of parsed input objects/dictionaries
+        data (np.array): grid representing heat loss amounts for passing through cells
+        starting_point (tuple, optional): starting point to work from. Defaults to (0, 0).
 
     Returns:
-        int: answer to Part 2 question
+        int: minimized heat loss value
     """
-    return 0
+    # ensure destination only consists of positive integers
+    dest_point = (dest_point[0] % blocks.shape[0], dest_point[1] % blocks.shape[1])
+
+    # queue entries: (point, direction, repeated_steps, heat_lost)
+    work_queue = [(starting_point, (0, 1), 0, 0), (starting_point, (1, 0), 0, 0)]
+    results = {}
+    check_loss_level = 0
+    while work_queue:
+        next_work_queue_indices = [
+            i for i, x in enumerate(work_queue) if x[3] == check_loss_level
+        ]
+        if not next_work_queue_indices:
+            logger.debug("completed loss level: %d...", check_loss_level)
+            check_loss_level += 1
+            continue
+        p, d, r_steps, loss = work_queue.pop(next_work_queue_indices[0])
+        entry = (p, d, r_steps)
+        if entry in results and results[entry] <= loss:
+            # skip doing anything.
+            continue
+        results[entry] = loss
+
+        # time to add the work for the next steps
+        if p == dest_point:
+            continue
+
+        possibles = [(0, -1), (0, 1), (-1, 0), (1, 0)]
+        for new_d in possibles:
+            if new_d == (-d[0], -d[1]):
+                continue
+            new_p = (p[0] + new_d[0], p[1] + new_d[1])
+            r, c = new_p
+            if r < 0 or r >= blocks.shape[0] or c < 0 or c >= blocks.shape[1]:
+                continue
+            new_loss = loss + blocks[new_p]
+            if new_d == d:
+                if r_steps < 10:
+                    new_entry = (new_p, new_d, r_steps + 1, new_loss)
+                    if new_entry not in work_queue:
+                        work_queue.append(new_entry)
+            else:
+                if r_steps >= 4:
+                    new_entry = (new_p, new_d, 1, new_loss)
+                    if new_entry not in work_queue:
+                        work_queue.append(new_entry)
+
+    best_cases = np.zeros(blocks.shape, dtype=int)
+    for entry, loss in results.items():
+        p, _, r_steps = entry
+        if r_steps >= 4:
+            if best_cases[p] == 0 or best_cases[p] > loss:
+                best_cases[p] = loss
+    best_cases[(0, 0)] = 0
+    logger.debug("\n %s", blocks)
+    logger.debug("\n %s", best_cases)
+    return best_cases[dest_point]
 
 
 def main():
@@ -68,10 +179,10 @@ def main():
     logger.setLevel(level=logging.INFO)
     text_data = get_file_data()
     data = parse_data(text_data)
-    answer = function(data)
-    print(f"Day 17: Part 1: <SUMMARY>: {answer}")
-    answer2 = function2(data)
-    print(f"Day 17: Part 2: <SUMMARY>: {answer2}")
+    answer = get_least_heat_lost_crucibles(data)
+    print(f"Day 17: Part 1: Least Heat Loss for Crucibles: {answer}")
+    answer2 = get_least_heat_loss_ultra_crucibles(data)
+    print(f"Day 17: Part 2: Least Heat Loss for Ultra Crucibles: {answer2}")
 
 
 if __name__ == "__main__":
