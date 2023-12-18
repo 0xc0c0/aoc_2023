@@ -120,23 +120,34 @@ def get_least_heat_loss_ultra_crucibles(
     dest_point = (dest_point[0] % blocks.shape[0], dest_point[1] % blocks.shape[1])
 
     # queue entries: (point, direction, repeated_steps, heat_lost)
-    work_queue = [(starting_point, (0, 1), 0, 0), (starting_point, (1, 0), 0, 0)]
+    work_queue = {0: [(starting_point, (0, 1), 0), (starting_point, (1, 0), 0)]}
     results = {}
-    check_loss_level = 0
+    loss = 0
     while work_queue:
-        next_work_queue_indices = [
-            i for i, x in enumerate(work_queue) if x[3] == check_loss_level
-        ]
-        if not next_work_queue_indices:
-            logger.debug("completed loss level: %d...", check_loss_level)
-            check_loss_level += 1
+        # next_work_queue_indices = [
+        #     i for i, x in enumerate(work_queue) if x[3] == check_loss_level
+        # ]
+        if loss in work_queue and len(work_queue[loss]) == 0:
+            del work_queue[loss]
+        if loss not in work_queue:
+            logger.debug(
+                "loss level: %d \t queue size: %s",
+                loss,
+                len(work_queue.items()),
+            )
+            loss += 1
             continue
-        p, d, r_steps, loss = work_queue.pop(next_work_queue_indices[0])
-        entry = (p, d, r_steps)
-        if entry in results and results[entry] <= loss:
-            # skip doing anything.
-            continue
-        results[entry] = loss
+        p, d, r_steps = work_queue[loss].pop()
+        entry = (p, d)
+        if entry not in results:
+            results[entry] = {}
+        if r_steps >= 4:
+            if r_steps in results[entry] and results[entry][r_steps] < loss:
+                # do nothing
+                continue
+            for check_r in range(r_steps, 11):
+                if check_r not in results[entry] or results[entry][check_r] > loss:
+                    results[entry][check_r] = loss
 
         # time to add the work for the next steps
         if p == dest_point:
@@ -151,23 +162,26 @@ def get_least_heat_loss_ultra_crucibles(
             if r < 0 or r >= blocks.shape[0] or c < 0 or c >= blocks.shape[1]:
                 continue
             new_loss = loss + blocks[new_p]
+            if new_loss not in work_queue:
+                work_queue[new_loss] = []
             if new_d == d:
                 if r_steps < 10:
-                    new_entry = (new_p, new_d, r_steps + 1, new_loss)
-                    if new_entry not in work_queue:
-                        work_queue.append(new_entry)
+                    new_entry = (new_p, new_d, r_steps + 1)
+                    if new_entry not in work_queue[new_loss]:
+                        work_queue[new_loss].append(new_entry)
             else:
                 if r_steps >= 4:
-                    new_entry = (new_p, new_d, 1, new_loss)
-                    if new_entry not in work_queue:
-                        work_queue.append(new_entry)
+                    new_entry = (new_p, new_d, 1)
+                    if new_entry not in work_queue[new_loss]:
+                        work_queue[new_loss].append(new_entry)
 
     best_cases = np.zeros(blocks.shape, dtype=int)
-    for entry, loss in results.items():
-        p, _, r_steps = entry
-        if r_steps >= 4:
-            if best_cases[p] == 0 or best_cases[p] > loss:
-                best_cases[p] = loss
+    for entry, lookup in results.items():
+        p, _ = entry
+        for r_steps, loss in lookup.items():
+            if r_steps >= 4:
+                if best_cases[p] == 0 or best_cases[p] > loss:
+                    best_cases[p] = loss
     best_cases[(0, 0)] = 0
     logger.debug("\n %s", blocks)
     logger.debug("\n %s", best_cases)
@@ -180,9 +194,9 @@ def main():
     text_data = get_file_data()
     data = parse_data(text_data)
     answer = get_least_heat_lost_crucibles(data)
-    print(f"Day 17: Part 1: Least Heat Loss for Crucibles: {answer}")
+    print(f"Day 17: Part 1: Least Heat Loss for Crucibles (Slow Algo): {answer}")
     answer2 = get_least_heat_loss_ultra_crucibles(data)
-    print(f"Day 17: Part 2: Least Heat Loss for Ultra Crucibles: {answer2}")
+    print(f"Day 17: Part 2: Least Heat Loss for Ultra Crucibles (Fast Algo): {answer2}")
 
 
 if __name__ == "__main__":
