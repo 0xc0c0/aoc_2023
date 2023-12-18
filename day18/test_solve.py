@@ -38,7 +38,8 @@ def test_parse_input(test_data):
         test_data (str): takes in a raw text str object as a data blob
     """
     data = parse_data(test_data)
-    assert (len(data)) == 0
+    assert (len(data)) == 14
+    assert data[3][1] == 2
 
 
 def test_all(test_data):
@@ -48,5 +49,5 @@ def test_all(test_data):
         test_data (str): takes in a raw text str object as a data blob
     """
     data = parse_data(test_data)
-    assert function(data) == 0
-    assert function2(data) == 0
+    assert function(data) == 62
+    assert function2(data) == 952408144115
