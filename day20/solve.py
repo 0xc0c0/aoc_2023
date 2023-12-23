@@ -3,7 +3,7 @@
 """Python solver file for Advent of Code Day 20"""
 import os
 import logging
-import time
+import math
 
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
 logger = logging.getLogger(__name__)
@@ -184,17 +184,30 @@ def print_deps_node(modules, node_name):
         print(f"\t {node_name} <- {modules[node_name]['op']} - {inputs}")
 
 
-def print_deps_tree(modules, start="rx"):
+def sort_val(e):
+    return e[2]
+
+
+def print_deps_tree(modules, start="rx", flip_flops=None):
     start_deps = [name for name in modules if start in modules[name]["rxs"]]
     s1 = start_deps[0]
-    print(f"{start} <- {s1}:{modules[s1]['state']}")
+    logger.debug(f"{start} <- {s1}:{modules[s1]['state']}")
     work_queue = start_deps
     printed = []
     while work_queue:
         cur = work_queue.pop()
         if cur not in printed:
-            key_values = [f"{rx}:{state}" for rx, state in modules[cur]["mem"].items()]
-            print(f"{cur} {modules[cur]['op']} <- {key_values}")
+            mem_data = list(modules[cur]["mem"].items())
+            if flip_flops:
+                sorted_list = [
+                    (rx, state, flip_flops[rx]["period"] if rx in flip_flops else 0)
+                    for rx, state in mem_data
+                ]
+                sorted_list.sort(key=sort_val)
+                mem_data = [(rx, state) for rx, state, _ in sorted_list]
+            key_values = [f"{rx}:{state}" for rx, state in mem_data]
+
+            logger.debug(f"{cur} {modules[cur]['op']} <- {key_values}")
             printed.append(cur)
         for c in modules[cur]["mem"].keys():
             if c not in printed:
@@ -295,43 +308,41 @@ def function2(modules):
     #     for n in modules[concern]["mem"]:
     #         modules[concern]["mem"][n] = 1
 
-    print_deps_tree(modules)
+    print_deps_tree(modules, flip_flops=flip_flops)
     rounds = 0
-    while True:
-        new_low, new_high = get_pulse_counts(modules, 1)
+    concerns = ["fv", "kk", "vt", "xr"]
+    offsets = []
+    while concerns:
+        low, high = get_pulse_counts(modules, 1)
         rounds += 1
-        if new_low["rx"] > 0:
+        if low["rx"] > 0:
             return rounds
 
-        time.sleep(1)
-        print(f"Finished: {rounds} rounds")
-        logger.debug(
-            "rx :: high count: %d, low count: %d", new_high["rx"], new_low["rx"]
-        )
-        print_deps_tree(modules)
+        for c in concerns:
+            if low[c] > 0:
+                logger.debug("%s low pulsed after %d pushes", c, rounds)
+                concerns.remove(c)
+                offsets.append(rounds)
+                # logger.debug(
+                #     "rx :: high count: %d, low count: %d", high["rx"], low["rx"]
+                # )
+                # print_deps_tree(modules, flip_flops=flip_flops)
+                # logger.debug("LOW: \n %s", low)
+                # logger.debug("HIGH: \n %s", high)
+                break
 
-    # need to figure out what flip flop starter state is required for rx to hit 0 ever
-    # need to perform freq analysis on the flip flop outputs required for rx to get to 0
-    # check if rx ever changes more than one time during a broadcast
-
-
-# check end of round's flip flop states
-# print deps tree with state values expressed in the picture
-# graph visualizations to show front to end paths
-
-# alternate approach
-# look for frequency analysis to find cycles required to get to all
+    return math.lcm(*offsets)
 
 
 def main():
     """Main function used to solve AoC problem"""
-    logger.setLevel(level=logging.DEBUG)
+    logger.setLevel(level=logging.INFO)
     text_data = get_file_data()
     data = parse_data(text_data)
     answer = function(data)
-    print(f"Day 20: Part 1: <SUMMARY>: {answer}")
+    print(f"Day 20: Part 1: Gate Logic - 1000 Rounds: {answer}")
     answer2 = function2(data)
-    print(f"Day 20: Part 2: <SUMMARY>: {answer2}")
+    print(f"Day 20: Part 2: Gate Logic - Reversing input.txt: {answer2}")
 
 
 if __name__ == "__main__":

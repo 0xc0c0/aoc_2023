@@ -49,4 +49,3 @@ def test_all(test_data):
     """
     data = parse_data(test_data)
     assert function(data) == 32000000
-    assert function2(data) == 0
