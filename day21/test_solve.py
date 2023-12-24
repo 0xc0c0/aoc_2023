@@ -38,7 +38,9 @@ def test_parse_input(test_data):
         test_data (str): takes in a raw text str object as a data blob
     """
     data = parse_data(test_data)
-    assert (len(data)) == 0
+    tiles, start = data
+    assert tiles.shape == (11, 11)
+    assert start == (5, 5)
 
 
 def test_all(test_data):
@@ -48,5 +50,12 @@ def test_all(test_data):
         test_data (str): takes in a raw text str object as a data blob
     """
     data = parse_data(test_data)
-    assert function(data) == 0
-    assert function2(data) == 0
+    tiles, start = data
+    assert function(tiles, start, steps=6) == 16
+    assert function(tiles, start, steps=10) == 50
+    assert function(tiles, start, steps=50) == 1594
+    assert function(tiles, start, steps=100) == 6536
+    # assert function(tiles, start, steps=500) == 167004
+    # assert function(tiles, start, steps=1000) == 668697
+    # assert function(tiles, start, steps=5000) == 16733044
+    assert function2(tiles) == 0
