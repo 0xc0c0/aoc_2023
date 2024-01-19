@@ -70,7 +70,7 @@ def function(tiles, start, steps=64):
     Returns:
         int: answer to Part 1 question
     """
-    reached = {}
+    reached = np.zeros((len(tiles), len(tiles[0])), dtype=bool)
     for r, row in enumerate(tiles):
         for c, val in enumerate(row):
             if val == "S":
@@ -79,47 +79,31 @@ def function(tiles, start, steps=64):
     # entries are (point, step_count)
     work_queue = [(start, 0)]
     completed = {}
-    h, w = tiles.shape
-    counts = np.zeros(tiles.shape, dtype=int)
     while work_queue:
         cur, step_count = work_queue.pop()
         is_even = step_count % 2 == 0
-        lookup_r = cur[0] % h
-        lookup_c = cur[1] % w
-        if not tiles[(lookup_r, lookup_c)]:
+        if not tiles[cur]:
             continue
-
         if cur not in completed:
             completed[cur] = {}
-        # this is where we save the time
-        if is_even:
-            if "True" not in completed:
-                completed[cur][True] = step_count
-
-        if is_even in completed[cur] and completed[cur][is_even] < step_count:
+        if is_even in completed[cur] and completed[cur][is_even] >= step_count:
             continue
+
         completed[cur][is_even] = step_count
         if step_count == steps:
-            if (lookup_r, lookup_c) not in reached:
-                reached[(lookup_r, lookup_c)] = 1
-            else:
-                reached[(lookup_r, lookup_c)] += 1
+            reached[cur] = True
             continue
         for option in [NORTH, SOUTH, EAST, WEST]:
             r = option[0] + cur[0]
             c = option[1] + cur[1]
-            if (
-                check_bounds((r, c), tiles.shape)
-                and (r, c) not in reached
-                and step_count < steps
-            ):
+            if check_bounds((r, c), tiles.shape) and not reached[(r, c)]:
                 work_queue.insert(0, ((r, c), (step_count + 1)))
 
     logger.debug(reached)
-    return sum(list(reached.values()))
+    return np.sum(reached)
 
 
-def function2(data):
+def function2(tiles, start=None, steps=6):
     """Complete Part 2 work
 
     Args:
@@ -128,6 +112,42 @@ def function2(data):
     Returns:
         int: answer to Part 2 question
     """
+    # default to center square
+    if not start:
+        start = (size // 2, size // 2)
+
+    # guaranteed completed square
+    full_step_count = size * 2
+
+    # assumes square
+    size = tiles.shape[0]
+
+    running_total = 0
+
+    memo = {}
+    
+    ROOT = 3
+    TRUNK = 4
+    BRANCH = 5
+    
+    # Algorithm/approach
+    #         ^
+    #       < | ^
+    #     < < | ^ ^
+    #   < < < | ^ ^ ^
+    # <-------o-------> 
+    #   v v v | > > >
+    #     v v | > > --- branches continue in one direction only
+    #       v | > 
+    #         v --- trunks spawn new branches 90 deg counterclockwise
+
+    ring = 0
+    work_queue = [('root', start, steps)]
+    while work_queue:
+        ring, s, rem_steps = work_queue.pop()
+        if ring == 0:
+            # need to setup trunks in all directions
+
     return 0
 
 
